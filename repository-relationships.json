@@ -29,7 +29,7 @@
     "contains_non_public_inventory": true,
     "digest": "sha256:d438da94557fcd1fa08e68c33037dbebc269d1283bef6fc4edaa712641589076",
     "path": "owners/meta-agents-demo.json",
-    "repository": "ORESoftware/project-registry"
+    "repository": "approved-private-registry"
   },
   "relationships": [
     {
