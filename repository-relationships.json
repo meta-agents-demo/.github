@@ -1,10 +1,121 @@
 {
+  "$schema": "./repository-relationships.schema.json",
+  "audience": "public",
+  "generated": {
+    "complete_for_visibility": "public",
+    "generated_at": "2026-08-05T21:07:32Z",
+    "generator_version": "2026-08-04.1",
+    "inventory_digest": "sha256:5bd2972917495e3ca04c61c1b65935744553c04953462975353193983c9f7391",
+    "managed_by": "ore-repository-relationship-rollout",
+    "omitted_repository_count": 3,
+    "private_repositories_omitted": true,
+    "source": "GitHub GraphQL repository inventory plus reviewed manual declarations"
+  },
+  "owner": {
+    "account_type": "organization",
+    "dotgithub_repository": "meta-agents-demo/.github",
+    "github_id": "311188342",
+    "linear_project": {
+      "id": "9914b9c3-8157-4ae5-a0c3-50b0a654ba06",
+      "name": "meta-agents-demo",
+      "team_id": "eb8ab169-5afe-4b6f-9cab-3f2aa3e887dc",
+      "url": "https://linear.app/denman/project/meta-agents-demo-e6f63b3acf1f",
+      "workspace": "denman"
+    },
+    "login": "meta-agents-demo",
+    "mapping_id": "context:meta-agents-demo"
+  },
+  "private_registry": {
+    "contains_non_public_inventory": true,
+    "digest": "sha256:d438da94557fcd1fa08e68c33037dbebc269d1283bef6fc4edaa712641589076",
+    "path": "owners/meta-agents-demo.json",
+    "repository": "ORESoftware/project-registry"
+  },
+  "relationships": [
+    {
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "kind": "github-owner-membership",
+          "source": "GitHub GraphQL repository inventory"
+        }
+      ],
+      "from": "meta-agents-demo/.github",
+      "id": "sha256:f38c2a1dbe7f0b1f223191af2687e0f6bd322e467067c75aa740a5e165238f2d",
+      "notes": "Organization .github policy and community-health defaults govern this sibling repository.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "meta-agents-demo/meta-agent-control-plane.rs",
+      "type": "governs"
+    },
+    {
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "kind": "github-owner-membership",
+          "source": "GitHub GraphQL repository inventory"
+        }
+      ],
+      "from": "meta-agents-demo/.github",
+      "id": "sha256:c26a02060ddcf003d3abafa777ec9668eca0b90fdb843fe2aade672507389afd",
+      "notes": "Organization .github policy and community-health defaults govern this sibling repository.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "meta-agents-demo/meta-agents-server.rs",
+      "type": "governs"
+    }
+  ],
+  "repositories": [
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "meta-agents-demo/.github",
+      "github_id": "1324048535",
+      "name": ".github",
+      "owner": "meta-agents-demo",
+      "roles": [
+        "community-health",
+        "governance",
+        "relationship-registry"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/meta-agents-demo/.github",
+      "visibility": "public"
+    },
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "meta-agents-demo/meta-agent-control-plane.rs",
+      "github_id": "1322126238",
+      "name": "meta-agent-control-plane.rs",
+      "owner": "meta-agents-demo",
+      "roles": [
+        "repository"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/meta-agents-demo/meta-agent-control-plane.rs",
+      "visibility": "public"
+    },
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "meta-agents-demo/meta-agents-server.rs",
+      "github_id": "1319508271",
+      "name": "meta-agents-server.rs",
+      "owner": "meta-agents-demo",
+      "roles": [
+        "repository"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/meta-agents-demo/meta-agents-server.rs",
+      "visibility": "public"
+    }
+  ],
   "schema_version": 1,
-  "organization": "meta-agents-demo",
-  "generated_at": null,
-  "repositories": [],
-  "notes": [
-    "Populate from live GitHub inventory; do not infer unverified dependencies.",
-    "Repository-local manifests remain authoritative for exact dependency versions."
-  ]
+  "unresolved_hints": []
 }
