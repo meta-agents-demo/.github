@@ -1,55 +1,58 @@
 # Secure environment standard
 
-This organization uses SOPS, Nix, and `just` as one contract for local, CI, and agent-managed environment variables.
+The canonical implementation is [`ORESoftware/ores-sops`](https://github.com/ORESoftware/ores-sops). Meta Agents repositories consume that package through Nix and delegate environment recipes through `just`; they do not copy or fork its shell logic.
 
-## Required layout
+## Repository contract
+
+Exactly two secret-bearing ciphertext paths are approved:
 
 ```text
-.sops.yaml
-flake.nix
-justfile
-env/
-  enc/
-    dev.env.enc
-    prod.env.enc
-  dec/
-    dev.env
-    prod.env
+env/enc/dev.env.enc
+env/enc/prod.env.enc
 ```
 
-`env/enc/*.env.enc` is ciphertext and may be committed. `env/dec/*.env` is plaintext and must never be committed. A repository may expose the selected profile at its root only through a relative `.env` symlink such as `.env -> env/dec/dev.env`; the link and every plaintext `.env` file remain ignored.
+Plaintext remains local-only:
 
-## Toolchain contract
-
-- **SOPS** performs encryption and decryption. Age is the default local and CI recipient mechanism; cloud KMS recipients are allowed where a project already owns them.
-- **Nix** pins `sops`, `age`, `just`, and the shell utilities used by recipes. Contributors and agents run recipes inside `nix develop`.
-- **just** is the only supported task entry point. Repositories implement `env-keygen`, `env-encrypt`, `env-decrypt`, `env-link`, `env-clean`, `env-policy`, and `env-ci`.
-- Private age identities, KMS credentials, decrypted files, and generated `.env` links never enter Git history, workflow artifacts, logs, prompts, or agent-bridge payloads.
-
-Real repositories should commit at least `env/enc/dev.env.enc` and `env/enc/prod.env.enc` after project-specific recipients are provisioned. Test fixtures use synthetic values and ephemeral age identities.
-
-## Agent and bridge boundary
-
-Agents may request a profile operation, but the process that holds decryption authority performs it. Bridge/coordinator events are metadata-only:
-
-```json
-{
-  "schema": "meta-agents.secure-env.v1",
-  "repository": "owner/name",
-  "profile": "dev",
-  "operation": "decrypt",
-  "ciphertext_sha256": "<hex>",
-  "result": "succeeded"
-}
+```text
+env/dec/dev.env
+env/dec/prod.env
+.env -> env/dec/dev.env   # or prod; relative managed symlink
 ```
 
-Never include plaintext values, private keys, environment dumps, command output containing secrets, or the encrypted data itself. Hashes identify the reviewed ciphertext without disclosing it.
+Private age identities, KMS credentials, decrypted files, and generated `.env` links never enter Git history, workflow artifacts, logs, prompts, Linear, or agent-bridge payloads. Ciphertext is validated by content and policy, not trusted merely because its filename ends in `.enc`.
 
-## CI and test-org policy
+`ores-sops` owns the exact dev/prod allowlist, explicit SOPS dotenv typing, atomic encryption/decryption, directory and file modes, managed symlink safety, hooks, keyless verification, and protected decrypt verification. Arbitrary environment names are intentionally rejected.
 
-`meta-agents-demo-test` is the execution boundary for destructive, cross-platform, and credential-integration tests. Production repositories keep a minimal policy/round-trip gate and should move larger matrices into test-org fixture repositories. Test repositories use synthetic secrets only; they do not receive production identities.
+## Nix and `just`
 
-Every repository can call:
+Pin `ores-sops` through a flake lock or an exact revision. The `meta-agents-demo/metacog-e2e` pilot pins a reviewed commit and exposes the upstream development shell and checks.
+
+Application repositories keep recipes as thin delegates:
+
+```just
+use name:
+    @ores-sops use {{ name }}
+
+encrypt name:
+    @ores-sops encrypt {{ name }}
+
+status:
+    @ores-sops status
+
+lock:
+    @ores-sops lock
+
+audit:
+    @ores-sops verify
+```
+
+This preserves one implementation across organizations while retaining a stable task interface for people and agents.
+
+## CI and proof boundary
+
+Pull-request checks are keyless by default: they validate tracked paths, ignore rules, SOPS policy, ciphertext structure, symlink safety, and the absence of private-key material. A protected test job may generate an ephemeral age identity and set `ORES_SOPS_VERIFY_DECRYPT=1` to prove a synthetic round trip. Production identities are never exposed to fork-originated workflows.
+
+A conforming repository may call:
 
 ```yaml
 jobs:
@@ -57,8 +60,29 @@ jobs:
     uses: meta-agents-demo/.github/.github/workflows/reusable-secure-env.yml@main
 ```
 
-The caller must contain the required `flake.nix`, `justfile`, scripts, and directory policy. External actions are pinned to full commit SHAs and workflow permissions remain read-only.
+The caller provides a pinned `flake.nix` and `just env-ci`. External actions remain pinned to full commit SHAs, workflow permissions stay read-only, and no plaintext is uploaded as an artifact.
+
+## Agent and bridge boundary
+
+Agents may request an operation, but only the process holding decryption authority performs it. Bridge/coordinator evidence is metadata-only:
+
+```json
+{
+  "schema": "meta-agents.secure-env.v1",
+  "repository": "owner/name",
+  "profile": "dev",
+  "operation": "roundtrip",
+  "ciphertext_sha256": "<hex>",
+  "result": "passed"
+}
+```
+
+Never include plaintext values, private keys, environment dumps, auth headers, command output containing secrets, or encrypted file bodies. The hash identifies the reviewed ciphertext without disclosing it.
+
+## Test organization
+
+`meta-agents-demo-test` is the intended execution boundary for the Linux/macOS matrix, Windows relative-symlink prerequisite, destructive fixtures, and bridge ingestion tests. Until the organization and GitHub App installation are available, `meta-agents-demo/metacog-e2e` carries a non-destructive synthetic proof in the production org. That infrastructure gap is tracked independently and must not block unrelated tickets.
 
 ## Rotation and recovery
 
-Recipient rotation is additive: add the new recipient, run `sops updatekeys` for every tracked ciphertext, validate decryption with the new identity, and only then retire the old identity. Rotation work must not block unrelated engineering tickets. Recovery material belongs in the approved secret manager, never in this repository or an R2 bucket.
+Recipient rotation is additive: add the new recipient, run `sops updatekeys` for both tracked ciphertext files, validate with the new identity, and only then retire the old identity. Rotate application credentials when compromise or offboarding requires it. Recovery identities belong in an independently controlled secret manager, never in Git or an R2 bucket.
