@@ -1,0 +1,30 @@
+name: reusable secure-env proof
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: secure-env-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secure-env:
+    name: SOPS + Nix + just
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out caller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31
+        with:
+          github_access_token: ${{ github.token }}
+
+      - name: Verify encrypted-environment contract
+        run: nix develop --no-write-lock-file --command just env-ci
