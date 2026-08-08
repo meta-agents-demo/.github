@@ -1,0 +1,50 @@
+name: secure-env self-test
+
+on:
+  pull_request:
+    paths:
+      - flake.nix
+      - justfile
+      - SECURE_ENVIRONMENTS.md
+      - META_AGENTS_TEST_ORG.md
+      - .github/workflows/reusable-secure-env.yml
+      - .github/workflows/secure-env-self-test.yml
+  push:
+    branches: [main]
+    paths:
+      - flake.nix
+      - justfile
+      - SECURE_ENVIRONMENTS.md
+      - META_AGENTS_TEST_ORG.md
+      - .github/workflows/reusable-secure-env.yml
+      - .github/workflows/secure-env-self-test.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: secure-env-self-test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  conformance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Validate this workflow
+        uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+        with:
+          args: .github/workflows/secure-env-self-test.yml
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31
+        with:
+          github_access_token: ${{ github.token }}
+
+      - name: Run pinned SOPS + Nix + just proof
+        run: nix develop --no-write-lock-file --command just env-ci
