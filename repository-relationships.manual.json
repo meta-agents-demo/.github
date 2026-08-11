@@ -5,7 +5,17 @@
     "A public .github repository must not name private repositories. Put private declarations in approved-private-registry."
   ],
   "owner": "meta-agents-demo",
-  "relationships": [],
+  "relationships": [
+    {
+      "from": "meta-agents-demo/meta-agent-control-plane.rs",
+      "notes": "The canonical production domain service supersedes this legacy/reference implementation; the superseded repository remains public for historical context, protocol comparison, and local development only.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "meta-agents-demo/meta-agents-server.rs",
+      "type": "supersedes"
+    }
+  ],
   "repositories": [],
   "schema_version": 1
 }

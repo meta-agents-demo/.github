@@ -46,6 +46,14 @@
       "to": "meta-agents-demo/meta-agents-server.rs"
     },
     {
+      "from": "meta-agents-demo/meta-agent-control-plane.rs",
+      "kind": "supersedes",
+      "rationale": "canonical production domain service supersedes the legacy/reference implementation",
+      "source_basis": "reviewed-production-policy",
+      "status": "declared",
+      "to": "meta-agents-demo/meta-agents-server.rs"
+    },
+    {
       "from": "organization://meta-agents-demo",
       "kind": "deployed_via",
       "rationale": "immutable artifacts are promoted by digest through GitOps",
@@ -78,9 +86,10 @@
       "default_branch": "main",
       "fork": false,
       "full_name": "meta-agents-demo/meta-agents-server.rs",
-      "lifecycle": "active",
+      "lifecycle": "superseded",
       "name": "meta-agents-server.rs",
-      "role": "domain_service",
+      "role": "reference_implementation",
+      "superseded_by": "meta-agents-demo/meta-agent-control-plane.rs",
       "visibility": "public"
     },
     {
@@ -88,9 +97,10 @@
       "default_branch": "main",
       "fork": false,
       "full_name": "meta-agents-demo/meta-agent-control-plane.rs",
+      "canonical": true,
       "lifecycle": "active",
       "name": "meta-agent-control-plane.rs",
-      "role": "library",
+      "role": "domain_service",
       "visibility": "public"
     }
   ],
@@ -98,10 +108,12 @@
     "api_service": "Owns public APIs, webhooks, authorization, validation, and orchestration.",
     "client_sdk": "Depends on interfaces and exposes generated clients plus thin wrappers.",
     "composition_workspace": "Composes source repositories and records the release BOM.",
+    "domain_service": "Owns the canonical product domain behavior and production service boundary.",
     "end_to_end_tests": "Runs black-box compatibility and user-flow checks.",
     "infrastructure": "Owns product cloud resources; promotion remains GitOps-controlled.",
     "interfaces": "Own OpenAPI, events, JSON Schema, compatibility fixtures, and DTO inputs.",
     "mcp_server": "Calls product SDKs/APIs; no parallel domain persistence.",
+    "reference_implementation": "Retains legacy behavior for historical context, protocol comparison, and local development; it is not a production deployment target.",
     "sync_service": "Owns product conflict policy/adapters and wraps Opto reconciliation.",
     "web_bff": "Owns browser sessions, CSRF, HTML/SSR, and calls the product API."
   },
