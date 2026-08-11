@@ -21,12 +21,17 @@ VALID_CONCLUSIONS = {
 }
 
 
-def classify_job(job: dict[str, Any]) -> dict[str, Any]:
+def classify_job(job: Any) -> dict[str, Any]:
+    if not isinstance(job, dict):
+        raise ValueError("job evidence must be a JSON object")
+
     conclusion = job.get("conclusion")
     if conclusion not in VALID_CONCLUSIONS:
         raise ValueError(f"unsupported or missing conclusion: {conclusion!r}")
 
     steps = job.get("steps")
+    if isinstance(steps, list) and any(not isinstance(step, dict) for step in steps):
+        raise ValueError("every step must be an object")
     if conclusion == "success":
         if not isinstance(steps, list) or not steps:
             raise ValueError("successful jobs must contain executed step evidence")

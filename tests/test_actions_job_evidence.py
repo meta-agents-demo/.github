@@ -43,6 +43,20 @@ class ActionsJobEvidenceTests(unittest.TestCase):
         self.assertEqual(result["classification"], "success")
         self.assertFalse(result["codeFailureProven"])
 
+    def test_malformed_job_and_step_evidence_fail_closed(self) -> None:
+        with self.assertRaisesRegex(ValueError, "JSON object"):
+            classify_job([{"conclusion": "failure"}])
+
+        with self.assertRaisesRegex(ValueError, "every step"):
+            classify_job(
+                {
+                    "id": 5,
+                    "name": "ci",
+                    "conclusion": "failure",
+                    "steps": ["not-an-object"],
+                }
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
