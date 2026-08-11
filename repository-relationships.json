@@ -3,9 +3,9 @@
   "audience": "public",
   "generated": {
     "complete_for_visibility": "public",
-    "generated_at": "2026-08-05T21:07:32Z",
+    "generated_at": "2026-08-11T19:09:15Z",
     "generator_version": "2026-08-04.1",
-    "inventory_digest": "sha256:5bd2972917495e3ca04c61c1b65935744553c04953462975353193983c9f7391",
+    "inventory_digest": "sha256:6d9cfc12118ec6602b4435f2ac37fb8e09fb21281a2a1bf58e6bf22943ef1769",
     "managed_by": "ore-repository-relationship-rollout",
     "omitted_repository_count": 3,
     "private_repositories_omitted": true,
@@ -65,6 +65,23 @@
       "status": "declared",
       "to": "meta-agents-demo/meta-agents-server.rs",
       "type": "governs"
+    },
+    {
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "kind": "manual-review",
+          "source": "repository-relationships.manual.json"
+        }
+      ],
+      "from": "meta-agents-demo/meta-agent-control-plane.rs",
+      "id": "sha256:212c5c17f8e3cbc6f8e0c66a9b844d0ba3bc2800d58b80ea17382036f567ab4c",
+      "notes": "The canonical production domain service supersedes this legacy/reference implementation; the superseded repository remains public for historical context, protocol comparison, and local development only.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "meta-agents-demo/meta-agents-server.rs",
+      "type": "supersedes"
     }
   ],
   "repositories": [
