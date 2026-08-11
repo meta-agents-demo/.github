@@ -1,0 +1,38 @@
+name: Actions evidence classifier
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/classify_actions_job.py'
+      - 'tests/test_actions_job_evidence.py'
+      - '.github/workflows/actions-evidence-classifier.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/classify_actions_job.py'
+      - 'tests/test_actions_job_evidence.py'
+      - '.github/workflows/actions-evidence-classifier.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  classify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Compile classifier and tests
+        run: python3 -m compileall -q scripts tests
+      - name: Run classifier contract tests
+        env:
+          PYTHONPATH: .
+        run: python3 -m unittest tests.test_actions_job_evidence -v
+      - name: Smoke-test zero-step evidence through CLI
+        run: |
+          printf '%s\n' '{"id":2932,"name":"private-ci","conclusion":"failure","steps":null}' \
+            | python3 scripts/classify_actions_job.py \
+            | grep -F '"classification":"runner_admission_failure"'
