@@ -69,15 +69,30 @@ workflow_paths = list((ROOT / '.github/workflows').glob('*.y*ml'))
 workflow_paths += list((ROOT / 'workflow-templates').glob('*.y*ml'))
 for path in workflow_paths:
     text = path.read_text(encoding='utf-8')
+    lines = text.splitlines()
     if 'permissions:' not in text:
         fail(f'workflow lacks explicit permissions: {path.relative_to(ROOT)}')
     if 'timeout-minutes:' not in text:
         fail(f'workflow lacks timeout: {path.relative_to(ROOT)}')
-    for number, line in enumerate(text.splitlines(), 1):
-        match = re.search(r'^\\s*(?:-\\s+)?uses:\\s*([^\\s#]+)', line)
+    for index, line in enumerate(lines):
+        number = index + 1
+        match = re.search(r'^\s*(?:-\s+)?uses:\s*([^\s#]+)', line)
         if not match:
             continue
         ref = match.group(1)
+        if ref.startswith('actions/checkout@'):
+            uses_indent = len(line) - len(line.lstrip())
+            step_lines = []
+            for following in lines[index + 1:]:
+                stripped = following.lstrip()
+                if not stripped:
+                    continue
+                indent = len(following) - len(stripped)
+                if indent < uses_indent or (indent == uses_indent and stripped.startswith('- ')):
+                    break
+                step_lines.append(following)
+            if not any(re.search(r'^\s*persist-credentials:\s*false\s*(?:#.*)?$', item) for item in step_lines):
+                fail(f'checkout credentials persist in {path.relative_to(ROOT)}:{number}')
         if ref.startswith('./'):
             continue
         if ref.startswith('docker://'):
@@ -86,8 +101,6 @@ for path in workflow_paths:
             continue
         if not re.search(r'@[0-9a-fA-F]{40}$', ref):
             fail(f'external Action is not pinned to a full SHA: {path.relative_to(ROOT)}:{number}: {ref}')
-    if 'actions/checkout@' in text and 'persist-credentials: false' not in text:
-        fail(f'checkout credentials persist in {path.relative_to(ROOT)}')
 
 import subprocess
 relationship_check = subprocess.run(

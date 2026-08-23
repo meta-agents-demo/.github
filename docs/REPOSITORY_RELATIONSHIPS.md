@@ -5,8 +5,8 @@ This file is rendered from `repository-relationships.json`. The JSON registry is
 
 - Audience: `public`
 - Repositories represented: **3**
-- Relationships represented: **2**
-- Inventory digest: `sha256:5bd2972917495e3ca04c61c1b65935744553c04953462975353193983c9f7391`
+- Relationships represented: **3**
+- Inventory digest: `sha256:6d9cfc12118ec6602b4435f2ac37fb8e09fb21281a2a1bf58e6bf22943ef1769`
 
 ## Immutable routing identity
 
@@ -31,6 +31,7 @@ This file is rendered from `repository-relationships.json`. The JSON registry is
 |---|---|---|---|---|
 | `meta-agents-demo/.github` | `governs` | `meta-agents-demo/meta-agent-control-plane.rs` | `declared` | yes |
 | `meta-agents-demo/.github` | `governs` | `meta-agents-demo/meta-agents-server.rs` | `declared` | yes |
+| `meta-agents-demo/meta-agent-control-plane.rs` | `supersedes` | `meta-agents-demo/meta-agents-server.rs` | `declared` | yes |
 
 ## Editing relationships
 

@@ -38,11 +38,26 @@ jobs:
           import re
           bad = []
           for path in Path('.github/workflows').glob('*.y*ml'):
-              for number, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
+              lines = path.read_text(encoding='utf-8').splitlines()
+              for index, line in enumerate(lines):
+                  number = index + 1
                   match = re.search(r'^\s*(?:-\s+)?uses:\s*([^\s#]+)', line)
                   if not match:
                       continue
                   ref = match.group(1)
+                  if ref.startswith('actions/checkout@'):
+                      uses_indent = len(line) - len(line.lstrip())
+                      step_lines = []
+                      for following in lines[index + 1:]:
+                          stripped = following.lstrip()
+                          if not stripped:
+                              continue
+                          indent = len(following) - len(stripped)
+                          if indent < uses_indent or (indent == uses_indent and stripped.startswith('- ')):
+                              break
+                          step_lines.append(following)
+                      if not any(re.search(r'^\s*persist-credentials:\s*false\s*(?:#.*)?$', item) for item in step_lines):
+                          bad.append(f"{path}:{number}: checkout credentials persist")
                   if ref.startswith('./'):
                       continue
                   if ref.startswith('docker://'):
