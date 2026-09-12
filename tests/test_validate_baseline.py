@@ -22,6 +22,30 @@ class ValidateBaselineTests(unittest.TestCase):
         result = self.run_validator(ROOT)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
 
+    def test_credential_findings_reject_headers_and_linear_keys_without_echoing_values(self) -> None:
+        fixtures = [
+            'Authorization: Bearer ' + 'A' * 32,
+            'aUtHoRiZaTiOn:\tbeAREr\t' + 'B' * 32,
+            'Authorization:    Bearer    ' + 'C' * 32,
+            'lin_' + 'api_' + 'D' * 32,
+        ]
+        for index, credential in enumerate(fixtures):
+            with self.subTest(case=index), tempfile.TemporaryDirectory() as temporary_directory:
+                candidate = Path(temporary_directory) / 'repository'
+                shutil.copytree(
+                    ROOT,
+                    candidate,
+                    ignore=shutil.ignore_patterns('.git', '__pycache__'),
+                )
+                fixture = candidate / 'credential-regression.txt'
+                fixture.write_text(credential + '\n', encoding='utf-8')
+
+                result = self.run_validator(candidate)
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('possible credential in credential-regression.txt', result.stderr)
+                self.assertNotIn(credential, result.stdout + result.stderr)
+
     def test_every_checkout_must_disable_credential_persistence(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             candidate = Path(temporary_directory) / 'repository'
